@@ -1,8 +1,10 @@
 import os
 import configparser
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, abort
+from marshmallow import ValidationError
 from database import Database
+from houses_validation import BaseSchema
 
 app = Flask(__name__)
 os.environ["FLASK_ENV"] = "development"
@@ -24,6 +26,10 @@ def hello_world():
 # Houses GET
 @app.route("/api/houses/", methods=["GET"])
 def houses_all():
+    """
+    GET endpoint that returns the number of houses, as well as all of the available Houses in the database as a json
+    object
+    """
     houses = db.get_houses_all()
     return jsonify({"itemCount": len(houses), "items": houses})
 
@@ -31,10 +37,34 @@ def houses_all():
 # House by ID GET and House by ID PUT
 @app.route("/api/houses/<house_id>", methods=["PUT", "GET"])
 def houses_by_id(house_id):
+    """
+    Endpoint that handles both GET and PUT requests targeting a single House object by id.
+
+    The GET variant searches the database for the requested house.
+    -    On success it returns the JSON representation of the object.
+    -    On failure it returns a 404 error code indicating that the requested House does not exist.
+
+    The PUT variant searches the database for the target house, if it finds it it will replace the saved data with the
+    data from the request body. If it finds no matching House ID it will create a new resource for that data.
+    -    On success it returns the JSON representation of the updated or newly created House
+    -    On failure it returns 400 rejecting the request due to malformed data
+    """
     if request.method == "GET":
-        return jsonify(db.get_houses_by_id(house_id))
+        db_res = db.get_houses_by_id(house_id)
+        if db_res is not None:
+            return jsonify(db_res)
+        else:
+            abort(404)
     elif request.method == "PUT":
         data = request.json
+
+        # schema validation
+        schema = BaseSchema()
+        try:
+            schema.load(data)
+        except ValidationError as err:
+            return jsonify(err.messages), 400
+
         # since the location isn't useful and should not be updated i will just manually set it to the requested
         # endpoints just to be extra safe.
         data["location"] = "http://{}:{}/api/houses/{}".format(HOST, PORT, house_id)
@@ -42,5 +72,4 @@ def houses_by_id(house_id):
 
 
 if __name__ == "__main__":
-    # load the file into memory
     app.run(host=HOST, port=PORT)
