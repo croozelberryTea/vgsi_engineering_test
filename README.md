@@ -9,17 +9,17 @@ Pre-req:
 You can run this solution by installing the requirements from the `requirements.txt` in the root of the project. Example: `pip install -r /path/to/project/requirements.txt`. Once you have successfully installed the requirements you can run the project by typing, while in the root of the project, `python app.py`.
 
 ### Notes about any improvements you'd like to make but did not have time to make
-I would like to have created a data access template so that I could have more simply switched between the "in-memory db" and a production db. A good POC would have been to add an optional SQLite3 datebase option with data persistence (outside of required scope). I also could have integrated the Postman tests and unittests so that they would run automagically via something like Github Actions.
+I would like to have created a data access template so that I could have more simply switched between the "in-memory db" and a production db. A good POC would have been to add an optional SQLite3 datebase option with data persistence (outside of the required scope). I also could have integrated the Postman tests and unittests so that they would run automagically via something like Github Actions. Finally, I could have created separate controller classes, this would have made maintainability a bit easier but for such a small project I didn't think about it until the very end.
 ### Notes on any API design choices
 I tried to keep the project as simple as I possibly could. Using only basic components of the flask library and some basic validation. The PUT endpoint was implemented to also add new data to the database (if the specified house id was not found in the database). This wasn't explicitly outlined in the document but is expected of a PUT request if there isn't a matching existing data point.
 ### Notes on the security implications of the implementation
-Anyone with cURL installed on their phone can completely nuke the entire dataset with little trouble. There isn't a ton of data validation other than:
+Anyone with cURL installed on their phone can completely nuke the entire dataset with little trouble due to the lack of authentication. Also, there isn't a ton of data validation other than:
 1) Does the request have all the fields.
 2) Are they all semi-appropriate datatypes.
 
 So in theory you could just fill every data point with garbage erasing any valuable data.
 
-Could be fixed with some simple authorization and better validation to make sure that the fields are really valid.
+Could be fixed with some simple authorization so only authorized users could change the dataset and better validation to make sure that the fields are really valid.
 
 ## Overview
 
