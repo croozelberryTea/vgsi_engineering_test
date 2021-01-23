@@ -22,7 +22,6 @@ class Database:
         # update the data to use a model for ease of use and use a map with the id as the key for quick lookup
         for x in tmp:
             self.data[x[0]] = House(x, self.host, self.port)
-        print(self.data)
 
     def get_houses_all(self):
         """
@@ -41,7 +40,6 @@ class Database:
         try:
             res = self.data[house_id].data
         except KeyError:
-            print("pain")
             return None
         return res
 
