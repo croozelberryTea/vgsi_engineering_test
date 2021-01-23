@@ -5,6 +5,7 @@ class BaseSchema(Schema):
     """
     Simple marshmallow based schema validation primarily for the put method. All fields are required.
     """
+
     firstName = fields.Str(required=True)
     lastName = fields.Str(required=True)
     street = fields.Str(required=True)
