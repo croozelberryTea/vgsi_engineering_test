@@ -35,8 +35,8 @@ def houses_all():
 
 
 # House by ID GET and House by ID PUT
-@app.route("/api/houses/<house_id>", methods=["PUT", "GET"])
-def houses_by_id(house_id):
+@app.route("/api/houses/<house_id>", methods=["GET"])
+def houses_by_id_get(house_id):
     """
     Endpoint that handles both GET and PUT requests targeting a single House object by id.
 
@@ -44,10 +44,7 @@ def houses_by_id(house_id):
     -    On success it returns the JSON representation of the object.
     -    On failure it returns a 404 error code indicating that the requested House does not exist.
 
-    The PUT variant searches the database for the target house, if it finds it it will replace the saved data with the
-    data from the request body. If it finds no matching House ID it will create a new resource for that data.
-    -    On success it returns the JSON representation of the updated or newly created House
-    -    On failure it returns 400 rejecting the request due to malformed data
+
     """
     if request.method == "GET":
         db_res = db.get_houses_by_id(house_id)
@@ -55,20 +52,31 @@ def houses_by_id(house_id):
             return jsonify(db_res)
         else:
             abort(404)
-    elif request.method == "PUT":
-        data = request.json
 
-        # schema validation
-        schema = BaseSchema()
-        try:
-            schema.load(data)
-        except ValidationError as err:
-            return jsonify(err.messages), 400
 
-        # since the location isn't useful and should not be updated i will just manually set it to the requested
-        # endpoints just to be extra safe.
-        data["location"] = "http://{}:{}/api/houses/{}".format(HOST, PORT, house_id)
-        return jsonify(db.put_houses_by_id(house_id, data))
+@app.route("/api/houses/<house_id>", methods=["PUT"])
+def houses_by_id_put(house_id):
+    """
+    Endpoint that handles both GET and PUT requests targeting a single House object by id.
+
+    The PUT variant searches the database for the target house, if it finds it it will replace the saved data with the
+    data from the request body. If it finds no matching House ID it will create a new resource for that data.
+    -    On success it returns the JSON representation of the updated or newly created House
+    -    On failure it returns 400 rejecting the request due to malformed data
+    """
+    data = request.json
+
+    # schema validation
+    schema = BaseSchema()
+    try:
+        schema.load(data)
+    except ValidationError as err:
+        return jsonify(err.messages), 400
+
+    # since the location isn't useful and should not be updated i will just manually set it to the requested
+    # endpoints just to be extra safe.
+    data["location"] = "http://{}:{}/api/houses/{}".format(HOST, PORT, house_id)
+    return jsonify(db.put_houses_by_id(house_id, data))
 
 
 if __name__ == "__main__":
